@@ -302,7 +302,7 @@ impl pallet_template::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = pallet_template::weights::SubstrateWeight<Runtime>;
 	type MinLength = ConstU32<3>;  // Tamanho mínimo do nickname
-    type MaxLength = ConstU32<16>; // Tamanho máximo do nickname
+    type MaxLength = ConstU32<200>; // Tamanho máximo do nickname
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.

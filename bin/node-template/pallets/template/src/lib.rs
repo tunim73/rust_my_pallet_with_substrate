@@ -19,23 +19,20 @@ pub mod pallet {
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 	use frame_support::dispatch::Vec;
+	use scale_info::prelude::format;
+	use frame_support::sp_runtime::traits::Hash;
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
 
-	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
-		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-		/// Type representing the weight of this pallet
 		type WeightInfo: WeightInfo;
 
-		/// The minimum length a name may be.
 		#[pallet::constant]
 		type MinLength: Get<u32>;
 
-		/// The maximum length a name may be.
 		#[pallet::constant]
 		type MaxLength: Get<u32>;
 	}
@@ -44,18 +41,22 @@ pub mod pallet {
 	pub(super) type Conhecimento<T: Config> = StorageMap<
 		_,
 		Twox64Concat,
-		T::AccountId,
-		(BoundedVec<u8, T::MaxLength>, i32)
+		T::Hash,
+		(BoundedVec<u8, T::MaxLength>, i32, T::AccountId)
 	>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// Event documentation should end with an array that provides descriptive names for event
-		/// parameters. [something, who]
-		SomethingStored {
-			something: u32,
-			who: T::AccountId,
+		AddConhecimentos {
+			conhecimento: BoundedVec<u8, T::MaxLength>,
+		},
+		ListConhecimentos {
+			conhecimentos: Vec<BoundedVec<u8, T::MaxLength>>,
+		},
+		SearchConhecimentos {
+			dono: T::AccountId,
+			conhecimentos: Vec<BoundedVec<u8, T::MaxLength>>,
 		},
 	}
 
@@ -82,14 +83,63 @@ pub mod pallet {
 			text: Vec<u8>,
 			categoria: i32
 		) -> DispatchResult {
+
+
+			
 			let sender = ensure_signed(origin)?;
 
 			let bounded_text: BoundedVec<_, _> = text.try_into().map_err(|_| Error::<T>::TooLong)?;
 			ensure!(bounded_text.len() >= (T::MinLength::get() as usize), Error::<T>::TooShort);
 
-			<Conhecimento<T>>::insert(&sender, (bounded_text, categoria));
+			let current_block = <frame_system::Pallet<T>>::block_number();
+			let data_hora_str = format!("{:?}", current_block);
+			let key_hash = T::Hashing::hash_of(&data_hora_str);
+
+			Self::deposit_event(Event::AddConhecimentos { conhecimento: bounded_text.clone() });
+			<Conhecimento<T>>::insert(key_hash, (bounded_text, categoria, &sender));
+
 			Ok(())
 		}
 
+		#[pallet::call_index(1)]
+		#[pallet::weight({ 50_000_000 })]
+		pub fn search(origin: OriginFor<T>, search: Vec<u8>, categoria_id:i32) -> DispatchResult {
+			let who = ensure_signed(origin)?;
+
+			let mut result: Vec<BoundedVec<u8, T::MaxLength>> = Vec::new();
+
+			for (_, (texto, categoria_armazenada, owner)) in <Conhecimento<T>>::iter() {
+				if categoria_armazenada == categoria_id && owner == who {
+					if
+						texto
+							.to_vec()
+							.windows(search.len())
+							.any(|window| window == search.as_slice())
+					{
+						result.push(texto);
+					}
+				}
+			}
+
+			Self::deposit_event(Event::SearchConhecimentos {dono:who, conhecimentos: result });
+
+			Ok(())
+		}
+
+		#[pallet::call_index(2)]
+		#[pallet::weight({ 50_000_000 })]
+		pub fn get_all_conhecimento(origin: OriginFor<T>) -> DispatchResult {
+			ensure_signed(origin)?;
+
+			let mut all_conhecimentos: Vec<BoundedVec<u8, T::MaxLength>> = Vec::new();
+
+			for (_, (texto, categoria_id, _)) in Conhecimento::<T>::iter() {
+				all_conhecimentos.push(texto);
+			}
+
+			Self::deposit_event(Event::ListConhecimentos { conhecimentos: all_conhecimentos });
+
+			Ok(())
+		}
 	}
 }
