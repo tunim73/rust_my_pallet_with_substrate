@@ -32,6 +32,14 @@ pub mod pallet {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		/// Type representing the weight of this pallet
 		type WeightInfo: WeightInfo;
+
+		/// The minimum length a name may be.
+		#[pallet::constant]
+		type MinLength: Get<u32>;
+
+		/// The maximum length a name may be.
+		#[pallet::constant]
+		type MaxLength: Get<u32>;
 	}
 
 	// The pallet's runtime storage items.
@@ -49,7 +57,10 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		/// Event documentation should end with an array that provides descriptive names for event
 		/// parameters. [something, who]
-		SomethingStored { something: u32, who: T::AccountId },
+		SomethingStored {
+			something: u32,
+			who: T::AccountId,
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -101,7 +112,7 @@ pub mod pallet {
 					// Update the value in storage with the incremented result.
 					<Something<T>>::put(new);
 					Ok(())
-				},
+				}
 			}
 		}
 	}
