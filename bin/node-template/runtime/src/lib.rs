@@ -46,8 +46,15 @@ use pallet_transaction_payment::{ConstFeeMultiplier, CurrencyAdapter, Multiplier
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
+
+// Nicks
+pub use pallet_nicks;
+
 /// Import the template pallet.
 pub use pallet_template;
+
+
+
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -272,6 +279,25 @@ impl pallet_sudo::Config for Runtime {
 	type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
 }
 
+/// Nicks
+/* impl pallet_nicks::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+} */
+
+
+impl pallet_nicks::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+/*     type Event = Event; */
+    type Currency = Balances;  // Use o pallet `Balances` como currency
+    type ReservationFee = ConstU128<100>; // Taxa para registrar um nickname
+    type Slashed = ();  // O que fazer com os fundos após remoção
+    type ForceOrigin = frame_system::EnsureRoot<AccountId>;  // Quem pode forçar a mudança de nickname
+    type MinLength = ConstU32<3>;  // Tamanho mínimo do nickname
+    type MaxLength = ConstU32<16>; // Tamanho máximo do nickname
+}
+
+
+
 /// Configure the pallet-template in pallets/template.
 impl pallet_template::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -290,6 +316,7 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		// Include the custom logic from the pallet-template in the runtime.
 		TemplateModule: pallet_template,
+		Nicks: pallet_nicks::{Pallet, Call, Storage, Event<T>},
 	}
 );
 

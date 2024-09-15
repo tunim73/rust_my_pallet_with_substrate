@@ -39,6 +39,9 @@ sp-std = { version = "8.0.0", default-features = false, path = "../../../primiti
 sp-storage = { version = "13.0.0", default-features = false, path = "../../../primitives/storage" }
 sp-transaction-pool = { version = "4.0.0-dev", default-features = false, path = "../../../primitives/transaction-pool" }
 sp-version = { version = "22.0.0", default-features = false, path = "../../../primitives/version" }
+pallet-nicks = { version = "4.0.0-dev", default-features = false, path = "../../../frame/nicks" }
+
+
 
 # Used for the node template's RPCs
 frame-system-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, path = "../../../frame/system/rpc/runtime-api/" }
@@ -74,6 +77,7 @@ std = [
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
+	"pallet-nicks/std",
 	"scale-info/std",
 	"sp-api/std",
 	"sp-block-builder/std",
