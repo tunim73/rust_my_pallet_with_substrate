@@ -1,3 +1,17 @@
+
+
+COMANDO
+
+cargo run --release --manifest-path bin/node-template/node/Cargo.toml -- --dev
+
+<br>
+<br>
+
+
+
+
+
+
 Dear contributors and users,
 
 We would like to inform you that we have recently made significant changes to our repository structure. In order to streamline our development process and foster better contributions, we have merged three separate repositories Cumulus, Substrate and Polkadot into a single new repository: [the Polkadot SDK](https://github.com/paritytech/polkadot-sdk). Go ahead and make sure to support us by giving a star ⭐️ to the new repo.
